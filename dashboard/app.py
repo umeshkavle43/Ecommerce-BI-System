@@ -3,13 +3,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 import numpy as np
+from pathlib import Path
 
+# Page Config
 st.set_page_config(page_title="E-Commerce BI Dashboard")
 
 st.title("🛒 E-Commerce Business Intelligence Dashboard")
 
-# Load Data
-df = pd.read_excel("../dataset/Superstore.xlsx")
+# Load Data (Works on Local + Streamlit Cloud)
+BASE_DIR = Path(__file__).resolve().parent.parent
+file_path = BASE_DIR / "dataset" / "Superstore.xlsx"
+
+df = pd.read_excel(file_path)
 
 # Sidebar Filters
 st.sidebar.header("Filters")
@@ -45,6 +50,7 @@ total_profit = filtered_df["Profit"].sum()
 total_orders = filtered_df["Order ID"].nunique()
 
 profit_margin = (total_profit / total_sales) * 100
+
 col1, col2, col3, col4 = st.columns(4)
 
 col1.metric("Total Sales", f"{total_sales:,.0f}")
@@ -55,6 +61,8 @@ col4.metric("Profit Margin", f"{profit_margin:.2f}%")
 st.markdown("---")
 
 # Monthly Sales
+st.subheader("Monthly Sales")
+
 monthly_sales = filtered_df.groupby("Month")["Sales"].sum()
 
 fig, ax = plt.subplots(figsize=(10, 5))
@@ -101,11 +109,7 @@ top_products = (
 
 st.bar_chart(top_products)
 
-# Debug (remove later)
-st.sidebar.write("Filtered Rows:", len(filtered_df))
-
-# create a CSV BUTTON 
-
+# Download CSV
 st.markdown("---")
 
 csv = filtered_df.to_csv(index=False)
@@ -115,9 +119,9 @@ st.download_button(
     data=csv,
     file_name="filtered_data.csv",
     mime="text/csv"
-) 
+)
 
-
+# Forecast
 st.markdown("---")
 st.subheader("📈 Sales Forecast")
 
@@ -127,7 +131,6 @@ forecast_data = (
     .reset_index()
 )
 
-# forecasting button had created 
 forecast_data["Month_Num"] = range(
     1,
     len(forecast_data) + 1
@@ -139,9 +142,7 @@ y = forecast_data["Sales"]
 model = LinearRegression()
 model.fit(X, y)
 
-next_month = np.array(
-    [[len(forecast_data) + 1]]
-)
+next_month = np.array([[len(forecast_data) + 1]])
 
 prediction = model.predict(next_month)
 
@@ -150,7 +151,7 @@ st.metric(
     f"{prediction[0]:,.0f}"
 )
 
-# forecasting graph created 
+# Forecast Graph
 st.subheader("📈 Sales Forecast Trend")
 
 forecast_months = list(range(1, len(forecast_data) + 1))
@@ -167,11 +168,3 @@ forecast_df = pd.DataFrame({
 st.line_chart(
     forecast_df.set_index("Month")
 )
-
-from pathlib import Path
-import pandas as pd
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-file_path = BASE_DIR / "dataset" / "Superstore.xlsx"
-
-df = pd.read_excel(file_path)
