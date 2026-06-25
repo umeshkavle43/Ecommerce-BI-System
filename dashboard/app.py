@@ -167,3 +167,11 @@ forecast_df = pd.DataFrame({
 st.line_chart(
     forecast_df.set_index("Month")
 )
+
+from pathlib import Path
+import pandas as pd
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+file_path = BASE_DIR / "dataset" / "Superstore.xlsx"
+
+df = pd.read_excel(file_path)
